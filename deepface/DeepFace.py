@@ -165,9 +165,10 @@ def verify(
 
 def verify2(
     img1_path: Union[str, np.ndarray, List[float]],
-    img2_path: Union[str, np.ndarray, List[float], List[str]],
+    img2_path: Union[str, np.ndarray, List[float]],
+    img3_path: Union[str, np.ndarray, List[float]],
     model_name: str = "VGG-Face",
-    detector_backend: str = "opencv",
+    detector_backend: str = "retinaface",
     distance_metric: str = "cosine",
     enforce_detection: bool = True,
     align: bool = True,
@@ -243,26 +244,7 @@ def verify2(
         - 'time' (float): Time taken for the verification process in seconds.
     """
 
-    if isinstance(img2_path, list) and len(img2_path) > 0 and isinstance(img2_path[0], str):
-        # Verify multiple images specified in img2_path.
-        for img2_path_i in img2_path:
-            verification.verify(
-                img1_path=img1_path,
-                img2_path=img2_path_i,
-                model_name=model_name,
-                detector_backend=detector_backend,
-                distance_metric=distance_metric,
-                enforce_detection=enforce_detection,
-                align=align,
-                expand_percentage=expand_percentage,
-                normalization=normalization,
-                silent=silent,
-                threshold=threshold,
-                anti_spoofing=anti_spoofing,
-            )
-        return None
-    else:
-        return verification.verify(
+    result2 = verification.verify(
             img1_path=img1_path,
             img2_path=img2_path,
             model_name=model_name,
@@ -276,6 +258,23 @@ def verify2(
             threshold=threshold,
             anti_spoofing=anti_spoofing,
         )
+    print(f"{img2_path}: {result2['distance']}")
+    if img3_path is not None:
+        result3 = verification.verify(
+            img1_path=img1_path,
+            img2_path=img3_path,
+            model_name=model_name,
+            detector_backend=detector_backend,
+            distance_metric=distance_metric,
+            enforce_detection=enforce_detection,
+            align=align,
+            expand_percentage=expand_percentage,
+            normalization=normalization,
+            silent=silent,
+            threshold=threshold,
+            anti_spoofing=anti_spoofing,
+        )
+        print(f"{img3_path}: {result3['distance']}")
 
 def analyze(
     img_path: Union[str, np.ndarray],
