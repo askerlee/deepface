@@ -244,8 +244,12 @@ def verify2(
     """
 
     img2_paths = img2_path.split(",")
+    
     for i in range(len(img2_paths)):
         img2_path = img2_paths[i].strip()
+        # Extend "~" symbol to the home directory in the path
+        img2_path = os.path.expanduser(img2_path)
+        
         result2 = verification.verify(
                 img1_path=img1_path,
                 img2_path=img2_path,
