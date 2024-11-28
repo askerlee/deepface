@@ -244,13 +244,13 @@ def verify2(
     """
 
     img2_paths = img2_path.split(",")
-    
+    distances = []
     for i in range(len(img2_paths)):
         img2_path = img2_paths[i].strip()
         # Extend "~" symbol to the home directory in the path
         img2_path = os.path.expanduser(img2_path)
-        
-        result2 = verification.verify(
+
+        result = verification.verify(
                 img1_path=img1_path,
                 img2_path=img2_path,
                 model_name=model_name,
@@ -264,7 +264,11 @@ def verify2(
                 threshold=threshold,
                 anti_spoofing=anti_spoofing,
             )
-        print(f"{img2_path}: {result2['distance']}")
+        print(f"{img2_path}: {result['distance']}")
+        distances.append(result['distance'])
+
+    avg_distance = sum(distances) / len(distances)
+    print(f"Average distance: {avg_distance}")
 
 def analyze(
     img_path: Union[str, np.ndarray],
