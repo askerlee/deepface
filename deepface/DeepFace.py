@@ -264,11 +264,11 @@ def verify2(
                 threshold=threshold,
                 anti_spoofing=anti_spoofing,
             )
-        print(f"{img2_path}: {result['distance']}")
+        print(f"{img2_path}: {result['distance']:.3f}")
         distances.append(result['distance'])
 
     avg_distance = sum(distances) / len(distances)
-    print(f"Average distance: {avg_distance}")
+    print(f"Average distance: {avg_distance:.3f}")
 
 def analyze(
     img_path: Union[str, np.ndarray],
