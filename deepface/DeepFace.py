@@ -3,6 +3,8 @@ import os
 import warnings
 import logging
 from typing import Any, Dict, List, Union, Optional
+import readline
+import signal
 
 # this has to be set before importing tensorflow
 os.environ["TF_USE_LEGACY_KERAS"] = "1"
@@ -268,7 +270,67 @@ def verify2(
         distances.append(result['distance'])
 
     avg_distance = sum(distances) / len(distances)
+    distances.append(avg_distance)
     print(f"Average distance: {avg_distance:.3f}")
+    return distances
+
+def console(image_root="~/test", last_n=10, model_name="VGG-Face",
+            detector_backend="retinaface"):
+    """Continuously prompt the user for input and evaluate it."""
+    print("Interactive Evaluator: Type arguments and press Enter (type 'q' to quit)")
+    print("Example: 121105-9000 wiki guitar")
+    signal.signal(signal.SIGINT, lambda signum, frame: print("\nCtrl+C disabled. Type 'q' to quit."))    
+
+    while True:
+        try:
+            # Prompt for input
+            user_input = input(">> ")
+
+            # Exit condition
+            if user_input.lower() == "q":
+                print("Exiting interactive evaluator.")
+                break
+
+            # Split input into arguments and call the function
+            if user_input.strip():
+                try:
+                    ckpt_iter, subject, prompt_sig  = user_input.split()
+                except:
+                    print("Invalid input. Please provide 3 arguments.")
+                    continue
+
+                # Paths are hard-coded for now
+                img1_path = os.path.expanduser(f"{image_root}/{subject}-1.jpg")
+                img2_paths = [ os.path.expanduser(f"{image_root}/{subject}-adaface{ckpt_iter}-{prompt_sig}-{i}.png") for i in range(1, 5) ]
+                img2_path = ",".join(img2_paths)
+                print(f"verify2: {img1_path} {img2_path}")
+                distances = None
+                try:
+                    distances = verify2(img1_path, img2_path, model_name=model_name, detector_backend=detector_backend)
+                except Exception as e:
+                    print(f"Error: {e}")
+                if distances is not None:
+                    with open("manual-eval.log", "a") as f:
+                        f.write(f"{subject}-{prompt_sig} {ckpt_iter} ")
+                        f.write(" ".join([f"{distance:.3f}" for distance in distances]))
+                        f.write("\n")
+
+                    # grep manual-eval.log for lines starting with {subject}-{prompt_sig}
+                    with open("manual-eval.log") as f:
+                        lines = f.readlines()
+                        lines = [line.strip() for line in lines if line.startswith(f"{subject}-{prompt_sig}")]
+                        lines = lines[-last_n:]
+                        print("\n".join(lines))
+
+            else:
+                print("No arguments provided. Try again.")
+        except EOFError:
+            # Handle Ctrl+D gracefully
+            print("\nExiting interactive evaluator.")
+            break
+        except Exception as e:
+            print(f"Error: {e}")
+
 
 def analyze(
     img_path: Union[str, np.ndarray],
