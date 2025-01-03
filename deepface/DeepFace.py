@@ -252,23 +252,30 @@ def verify2(
         # Extend "~" symbol to the home directory in the path
         img2_path = os.path.expanduser(img2_path)
 
-        result = verification.verify(
-                img1_path=img1_path,
-                img2_path=img2_path,
-                model_name=model_name,
-                detector_backend=detector_backend,
-                distance_metric=distance_metric,
-                enforce_detection=enforce_detection,
-                align=align,
-                expand_percentage=expand_percentage,
-                normalization=normalization,
-                silent=silent,
-                threshold=threshold,
-                anti_spoofing=anti_spoofing,
-            )
-        print(f"{img2_path}: {result['distance']:.3f}")
-        distances.append(result['distance'])
-
+        try:
+            result = verification.verify(
+                    img1_path=img1_path,
+                    img2_path=img2_path,
+                    model_name=model_name,
+                    detector_backend=detector_backend,
+                    distance_metric=distance_metric,
+                    enforce_detection=enforce_detection,
+                    align=align,
+                    expand_percentage=expand_percentage,
+                    normalization=normalization,
+                    silent=silent,
+                    threshold=threshold,
+                    anti_spoofing=anti_spoofing,
+                )
+            print(f"{img2_path}: {result['distance']:.3f}")
+            distances.append(result['distance'])
+        except Exception as e:
+            print(f"Error: {e}")
+            continue
+    
+    if len(distances) == 0:
+        return None
+    
     avg_distance = sum(distances) / len(distances)
     distances.append(avg_distance)
     print(f"Average distance: {avg_distance:.3f}")
