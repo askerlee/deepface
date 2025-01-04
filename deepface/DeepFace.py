@@ -290,11 +290,11 @@ def show(history_records, indices):
     sel_records = []
     # Select records based on indices. Support -3:, -4:-2, :2, etc.
     for index in indices:
-        if index == ":":
+        if index == ':':
             sel_records = history_records
             break
-        if ':' in index:
-            id1, id2 = index.split(":")
+        elif ':' in index:
+            id1, id2 = index.split(':')
             if id1 == "":
                 id1 = 0
             if id2 == "":
@@ -306,7 +306,6 @@ def show(history_records, indices):
             index = int(index)
             sel_records.append(history_records[index])
 
-    sel_records = [history_records[int(index)] for index in indices]
     rows_paths = []
     for record in sel_records:
         subj_prompt, ckpt_sig, *distances = record.split()
