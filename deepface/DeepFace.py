@@ -289,7 +289,8 @@ def show(history_records, subj_prompt, indices, last_n=10):
         with open("manual-eval.log") as f:
             lines = f.readlines()
             lines = [line.strip() for line in lines if line.startswith(subj_prompt)]
-
+            history_records = lines
+            
     if len(history_records) == 0:
         print("No history records yet. Do a face verify first to pull some records.")
         return
@@ -315,7 +316,7 @@ def show(history_records, subj_prompt, indices, last_n=10):
             sel_records.append(history_records[index])
 
     sel_records = sel_records[-last_n:]
-    
+
     rows_paths = []
     ckpt_sigs = {}
     for record in sel_records:
@@ -367,7 +368,7 @@ def console(image_root="~/test", last_n=10, model_name="VGG-Face",
             if user_input.strip():
                 # Show relevant images as a grid.
                 if user_input.startswith('show '):
-                    args = user_input[5:].split()                        
+                    args = user_input[5:].split()       
                     if len(args) == 2:
                         subj_prompt, indices = args
                         show(None, subj_prompt, indices, last_n=last_n)
