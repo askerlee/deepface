@@ -289,6 +289,8 @@ def show(history_records, subj_prompt, indices, last_n=10):
         with open("manual-eval.log") as f:
             lines = f.readlines()
             lines = [line.strip() for line in lines if line.startswith(subj_prompt)]
+            # Deduplicate lines
+            lines = list(dict.fromkeys(lines))
             history_records = lines
 
     if len(history_records) == 0:
@@ -306,10 +308,18 @@ def show(history_records, subj_prompt, indices, last_n=10):
             id1, id2 = index.split(':')
             if id1 == "":
                 id1 = 0
+            else:
+                id1 = int(id1)
+                # Positive indices are 1-based, map them to 0-based
+                if id1 > 0:
+                    id1 -= 1
             if id2 == "":
                 id2 = len(history_records)
-            id1 = int(id1)
-            id2 = int(id2)
+            else:
+                id2 = int(id2)
+                # Positive indices are 1-based, map them to 0-based
+                if id2 > 0:
+                    id2 -= 1
             sel_records.extend(history_records[id1:id2])
         else:
             index = int(index)
@@ -330,7 +340,7 @@ def show(history_records, subj_prompt, indices, last_n=10):
         print(i+1, record)
 
     rows_paths = rows_paths[-last_n:]
-    
+
     # Stitch images together, each list in rows_paths as a row
     imgs = []
     for row_paths in rows_paths:
@@ -411,8 +421,11 @@ def console(image_root="~/test", last_n=10, model_name="VGG-Face",
                     with open("manual-eval.log") as f:
                         lines = f.readlines()
                         lines = [line.strip() for line in lines if line.startswith(f"{subject}-{prompt_sig}")]
+                        # Deduplicate lines
+                        lines = list(dict.fromkeys(lines))                        
                         lines = lines[-last_n:]
-                        print("\n".join(lines))
+                        for no, line in enumerate(lines):
+                            print(no+1, line)
                         history_records = lines
 
             else:
