@@ -286,7 +286,8 @@ def show(history_records, indices):
     if len(history_records) == 0:
         print("No history records yet. Do a face verify first to pull some records.")
         return
-    
+
+    indices = indices.split(",")    
     sel_records = []
     # Select records based on indices. Support -3:, -4:-2, :2, etc.
     for index in indices:
@@ -307,12 +308,19 @@ def show(history_records, indices):
             sel_records.append(history_records[index])
 
     rows_paths = []
+    ckpt_sigs = {}
     for record in sel_records:
         subj_prompt, ckpt_sig, *distances = record.split()
+        # Don't show duplicate rows of images
+        if ckpt_sig in ckpt_sigs:
+            continue
         subj, prompt_sig = subj_prompt.split("-")
         row_paths = [ f"~/test/{subj}-adaface{ckpt_sig}-{prompt_sig}-{i}.png" for i in range(1, 5) ]
         rows_paths.append(row_paths)
-    
+        ckpt_sigs[ckpt_sig] = True
+
+    print(" ".join(list(ckpt_sigs.keys())))
+
     # Stitch images together, each list in rows_paths as a row
     imgs = []
     for row_paths in rows_paths:
@@ -348,9 +356,24 @@ def console(image_root="~/test", last_n=10, model_name="VGG-Face",
 
             # Split input into arguments and call the function
             if user_input.strip():
+                # Show relevant images as a grid.
                 if user_input.startswith('show '):
-                    show(history_records, user_input[5:].split())
+                    args = user_input[5:].split()                        
+                    if len(args) == 2:
+                        subj_prompt, indices = args
+                        with open("manual-eval.log") as f:
+                            lines = f.readlines()
+                            lines = [line.strip() for line in lines if line.startswith(subj_prompt)]
+                            all_history_records = lines
+                        show(all_history_records, indices)
+                    elif len(args) == 1:
+                        indices = args
+                        show(history_records, indices)
+                    else:
+                        print("Invalid input. Format: <subj-prompt_signature> <index1,index2,...>")
                     continue
+
+                # Do face validation.
                 try:
                     ckpt_iter, subject, prompt_sig  = user_input.split()
                 except:
