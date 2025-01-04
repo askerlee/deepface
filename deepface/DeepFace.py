@@ -3,9 +3,11 @@ import os
 import warnings
 import logging
 from typing import Any, Dict, List, Union, Optional
+# No need to refer to readline functions. importing it, then it will take care of the rest.
 import readline
 import signal
 import cv2
+import re
 
 # this has to be set before importing tensorflow
 os.environ["TF_USE_LEGACY_KERAS"] = "1"
@@ -282,7 +284,13 @@ def verify2(
     print(f"Average distance: {avg_distance:.3f}")
     return distances
 
-def show(history_records, indices):
+def show(history_records, subj_prompt, indices):
+    if history_records is None and subj_prompt is not None:
+        with open("manual-eval.log") as f:
+            lines = f.readlines()
+            lines = [line.strip() for line in lines if line.startswith(subj_prompt)]
+            history_records = lines
+
     if len(history_records) == 0:
         print("No history records yet. Do a face verify first to pull some records.")
         return
@@ -361,14 +369,15 @@ def console(image_root="~/test", last_n=10, model_name="VGG-Face",
                     args = user_input[5:].split()                        
                     if len(args) == 2:
                         subj_prompt, indices = args
-                        with open("manual-eval.log") as f:
-                            lines = f.readlines()
-                            lines = [line.strip() for line in lines if line.startswith(subj_prompt)]
-                            all_history_records = lines
-                        show(all_history_records, indices)
+                        show(None, subj_prompt, indices)
                     elif len(args) == 1:
-                        indices = args
-                        show(history_records, indices)
+                        if re.match(r'^[a-z0-9]+-[a-z0-9]+$', args[0]):
+                            subj_prompt = args[0]
+                            indices = ':'
+                            show(None, subj_prompt, indices)
+                        else:
+                            indices = args[0]
+                            show(history_records, None, indices)
                     else:
                         print("Invalid input. Format: <subj-prompt_signature> <index1,index2,...>")
                     continue
