@@ -284,9 +284,28 @@ def verify2(
 
 def show(history_records, indices):
     if len(history_records) == 0:
-        print("No history records yet. Do a face verify first to extract some records.")
+        print("No history records yet. Do a face verify first to pull some records.")
         return
     
+    sel_records = []
+    # Select records based on indices. Support -3:, -4:-2, :2, etc.
+    for index in indices:
+        if index == ":":
+            sel_records = history_records
+            break
+        if ':' in index:
+            id1, id2 = index.split(":")
+            if id1 == "":
+                id1 = 0
+            if id2 == "":
+                id2 = len(history_records)
+            id1 = int(id1)
+            id2 = int(id2)
+            sel_records.extend(history_records[id1:id2])
+        else:
+            index = int(index)
+            sel_records.append(history_records[index])
+
     sel_records = [history_records[int(index)] for index in indices]
     rows_paths = []
     for record in sel_records:
@@ -302,7 +321,7 @@ def show(history_records, indices):
         imgs.append(row_imgs)
     imgs = [ np.concatenate(row_imgs, axis=1) for row_imgs in imgs ]
     img = np.concatenate(imgs, axis=0)
-    grid_image_path = os.path.expanduser(f"~/test/{subj}.png")
+    grid_image_path = os.path.expanduser(f"~/test/{subj_prompt}.png")
     cv2.imwrite(grid_image_path, img)
     print(f"gpicview {grid_image_path}") 
     # call gpicview to show the image
