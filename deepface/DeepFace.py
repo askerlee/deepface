@@ -315,8 +315,6 @@ def show(history_records, subj_prompt, indices, last_n=10):
             index = int(index)
             sel_records.append(history_records[index])
 
-    sel_records = sel_records[-last_n:]
-
     rows_paths = []
     ckpt_sigs = {}
     for i, record in enumerate(sel_records):
@@ -331,6 +329,8 @@ def show(history_records, subj_prompt, indices, last_n=10):
 
         print(i+1, record)
 
+    rows_paths = rows_paths[-last_n:]
+    
     # Stitch images together, each list in rows_paths as a row
     imgs = []
     for row_paths in rows_paths:
