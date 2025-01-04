@@ -5,6 +5,7 @@ import logging
 from typing import Any, Dict, List, Union, Optional
 import readline
 import signal
+import cv2
 
 # this has to be set before importing tensorflow
 os.environ["TF_USE_LEGACY_KERAS"] = "1"
@@ -281,6 +282,32 @@ def verify2(
     print(f"Average distance: {avg_distance:.3f}")
     return distances
 
+def show(history_records, indices):
+    if len(history_records) == 0:
+        print("No history records yet. Do a face verify first to extract some records.")
+        return
+    
+    sel_records = [history_records[int(index)] for index in indices]
+    rows_paths = []
+    for record in sel_records:
+        subj_prompt, ckpt_sig, *distances = record.split()
+        subj, prompt_sig = subj_prompt.split("-")
+        row_paths = [ f"~/test/{subj}-adaface{ckpt_sig}-{prompt_sig}-{i}.png" for i in range(1, 5) ]
+        rows_paths.append(row_paths)
+    
+    # Stitch images together, each list in rows_paths as a row
+    imgs = []
+    for row_paths in rows_paths:
+        row_imgs = [ cv2.imread(os.path.expanduser(img_path)) for img_path in row_paths ]
+        imgs.append(row_imgs)
+    imgs = [ np.concatenate(row_imgs, axis=1) for row_imgs in imgs ]
+    img = np.concatenate(imgs, axis=0)
+    grid_image_path = os.path.expanduser(f"~/test/{subj}.png")
+    cv2.imwrite(grid_image_path, img)
+    print(f"gpicview {grid_image_path}") 
+    # call gpicview to show the image
+    os.system(f"gpicview {grid_image_path}")
+
 def console(image_root="~/test", last_n=10, model_name="VGG-Face",
             detector_backend="retinaface"):
     """Continuously prompt the user for input and evaluate it."""
@@ -288,18 +315,24 @@ def console(image_root="~/test", last_n=10, model_name="VGG-Face",
     print("Example: 121105-9000 wiki guitar")
     signal.signal(signal.SIGINT, lambda signum, frame: print("\nCtrl+C disabled. Type 'q' to quit."))    
 
+    history_records = []
+
     while True:
         try:
             # Prompt for input
             user_input = input(">> ")
+            user_input = user_input.lower().strip()
 
             # Exit condition
-            if user_input.lower() == "q":
+            if user_input == "q":
                 print("Exiting interactive evaluator.")
                 break
 
             # Split input into arguments and call the function
             if user_input.strip():
+                if user_input.startswith('show '):
+                    show(history_records, user_input[5:].split())
+                    continue
                 try:
                     ckpt_iter, subject, prompt_sig  = user_input.split()
                 except:
@@ -328,6 +361,7 @@ def console(image_root="~/test", last_n=10, model_name="VGG-Face",
                         lines = [line.strip() for line in lines if line.startswith(f"{subject}-{prompt_sig}")]
                         lines = lines[-last_n:]
                         print("\n".join(lines))
+                        history_records = lines
 
             else:
                 print("No arguments provided. Try again.")
