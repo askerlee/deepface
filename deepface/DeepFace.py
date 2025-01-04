@@ -326,17 +326,11 @@ def show(history_records, subj_prompt, indices, last_n=10):
             sel_records.append(history_records[index])
 
     rows_paths = []
-    ckpt_sigs = {}
     for i, record in enumerate(sel_records):
         subj_prompt, ckpt_sig, *distances = record.split()
-        # Don't show duplicate rows of images
-        if ckpt_sig in ckpt_sigs:
-            continue
         subj, prompt_sig = subj_prompt.split("-")
         row_paths = [ f"~/test/{subj}-adaface{ckpt_sig}-{prompt_sig}-{i}.png" for i in range(1, 5) ]
         rows_paths.append(row_paths)
-        ckpt_sigs[ckpt_sig] = True
-
         print(i+1, record)
 
     rows_paths = rows_paths[-last_n:]
