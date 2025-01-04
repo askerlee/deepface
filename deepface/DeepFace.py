@@ -290,7 +290,7 @@ def show(history_records, subj_prompt, indices, last_n=10):
             lines = f.readlines()
             lines = [line.strip() for line in lines if line.startswith(subj_prompt)]
             history_records = lines
-            
+
     if len(history_records) == 0:
         print("No history records yet. Do a face verify first to pull some records.")
         return
@@ -319,7 +319,7 @@ def show(history_records, subj_prompt, indices, last_n=10):
 
     rows_paths = []
     ckpt_sigs = {}
-    for record in sel_records:
+    for i, record in enumerate(sel_records):
         subj_prompt, ckpt_sig, *distances = record.split()
         # Don't show duplicate rows of images
         if ckpt_sig in ckpt_sigs:
@@ -329,7 +329,7 @@ def show(history_records, subj_prompt, indices, last_n=10):
         rows_paths.append(row_paths)
         ckpt_sigs[ckpt_sig] = True
 
-    print(" ".join(list(ckpt_sigs.keys())))
+        print(i+1, record)
 
     # Stitch images together, each list in rows_paths as a row
     imgs = []
