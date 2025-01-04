@@ -284,12 +284,11 @@ def verify2(
     print(f"Average distance: {avg_distance:.3f}")
     return distances
 
-def show(history_records, subj_prompt, indices):
+def show(history_records, subj_prompt, indices, last_n=10):
     if history_records is None and subj_prompt is not None:
         with open("manual-eval.log") as f:
             lines = f.readlines()
             lines = [line.strip() for line in lines if line.startswith(subj_prompt)]
-            history_records = lines
 
     if len(history_records) == 0:
         print("No history records yet. Do a face verify first to pull some records.")
@@ -315,6 +314,8 @@ def show(history_records, subj_prompt, indices):
             index = int(index)
             sel_records.append(history_records[index])
 
+    sel_records = sel_records[-last_n:]
+    
     rows_paths = []
     ckpt_sigs = {}
     for record in sel_records:
@@ -369,15 +370,15 @@ def console(image_root="~/test", last_n=10, model_name="VGG-Face",
                     args = user_input[5:].split()                        
                     if len(args) == 2:
                         subj_prompt, indices = args
-                        show(None, subj_prompt, indices)
+                        show(None, subj_prompt, indices, last_n=last_n)
                     elif len(args) == 1:
                         if re.match(r'^[a-z0-9]+-[a-z0-9]+$', args[0]):
                             subj_prompt = args[0]
                             indices = ':'
-                            show(None, subj_prompt, indices)
+                            show(None, subj_prompt, indices, last_n=last_n)
                         else:
                             indices = args[0]
-                            show(history_records, None, indices)
+                            show(history_records, None, indices, last_n=last_n)
                     else:
                         print("Invalid input. Format: <subj-prompt_signature> <index1,index2,...>")
                     continue
