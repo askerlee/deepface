@@ -284,7 +284,7 @@ def verify2(
     print(f"Average distance: {avg_distance:.3f}")
     return distances
 
-def show(history_records, subj_prompt, indices, last_n=10):
+def show(history_records, subj_prompt, indices, last_n=6):
     if history_records is None and subj_prompt is not None:
         with open("manual-eval.log") as f:
             lines = f.readlines()
@@ -304,6 +304,7 @@ def show(history_records, subj_prompt, indices, last_n=10):
         if index == ':':
             sel_records = history_records
             break
+        # 2:5, -4:, etc.
         elif ':' in index:
             id1, id2 = index.split(':')
             if id1 == "":
@@ -321,10 +322,19 @@ def show(history_records, subj_prompt, indices, last_n=10):
                 if id2 > 0:
                     id2 -= 1
             sel_records.extend(history_records[id1:id2])
+        # < 0.4, < 0.5, etc, as a filter condition.
+        elif index.startswith('<'):
+            thres = float(index[1:])
+            # The last element is the average distance. So use it for filtering.
+            sel_records.extend([record for record in history_records if float(record.split()[-1]) < thres])
         else:
             index = int(index)
+            # Positive indices are 1-based, map them to 0-based
+            if index > 0:
+                index -= 1
             sel_records.append(history_records[index])
 
+    sel_records = sel_records[-last_n:]
     rows_paths = []
     for i, record in enumerate(sel_records):
         subj_prompt, ckpt_sig, *distances = record.split()
@@ -332,8 +342,6 @@ def show(history_records, subj_prompt, indices, last_n=10):
         row_paths = [ f"~/test/{subj}-adaface{ckpt_sig}-{prompt_sig}-{i}.png" for i in range(1, 5) ]
         rows_paths.append(row_paths)
         print(i+1, record)
-
-    rows_paths = rows_paths[-last_n:]
 
     # Stitch images together, each list in rows_paths as a row
     imgs = []
@@ -375,15 +383,15 @@ def console(image_root="~/test", last_n=10, model_name="VGG-Face",
                     args = user_input[5:].split()       
                     if len(args) == 2:
                         subj_prompt, indices = args
-                        show(None, subj_prompt, indices, last_n=last_n)
+                        show(None, subj_prompt, indices, last_n=6)
                     elif len(args) == 1:
                         if re.match(r'^[a-z0-9]+-[a-z0-9]+$', args[0]):
                             subj_prompt = args[0]
                             indices = ':'
-                            show(None, subj_prompt, indices, last_n=last_n)
+                            show(None, subj_prompt, indices, last_n=6)
                         else:
                             indices = args[0]
-                            show(history_records, None, indices, last_n=last_n)
+                            show(history_records, None, indices, last_n=6)
                     else:
                         print("Invalid input. Format: <subj-prompt_signature> <index1,index2,...>")
                     continue
