@@ -289,8 +289,9 @@ def show(history_records, subj_prompt, indices, last_n=6):
         with open("manual-eval.log") as f:
             lines = f.readlines()
             lines = [line.strip() for line in lines if line.startswith(subj_prompt)]
+            line_sigs = [ " ".join(line.split()[:2]) for line in lines]
             # Deduplicate lines
-            lines = list(dict.fromkeys(lines))
+            lines = list(dict(zip(line_sigs, lines)).values())
             history_records = lines
 
     if len(history_records) == 0:
