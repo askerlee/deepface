@@ -289,14 +289,15 @@ def show(history_records, subj_prompt, indices, last_n=6):
         with open("manual-eval.log") as f:
             lines = f.readlines()
             lines = [line.strip() for line in lines if line.startswith(subj_prompt)]
-            line_sigs = [ " ".join(line.split()[:2]) for line in lines]
-            # Deduplicate lines
-            lines = list(dict(zip(line_sigs, lines)).values())
             history_records = lines
 
     if len(history_records) == 0:
         print("No history records yet. Do a face verify first to pull some records.")
         return
+
+    record_sigs = [ " ".join(record.split()[:2]) for record in history_records]
+    # Deduplicate lines
+    history_records = list(dict(zip(record_sigs, history_records)).values())
 
     indices = indices.split(",")    
     sel_records = []
