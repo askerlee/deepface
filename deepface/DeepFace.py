@@ -345,6 +345,9 @@ def show(history_records, prompt_pat, indices, last_n=6):
         rows_paths.append(row_paths)
         print(i+1, record)
 
+    if prompt_pat is None:
+        prompt_pat = subj_prompt
+        
     # Stitch images together, each list in rows_paths as a row
     imgs = []
     for row_paths in rows_paths:
