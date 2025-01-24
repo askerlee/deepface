@@ -284,13 +284,15 @@ def verify2(
     print(f"Average distance: {avg_distance:.3f}")
     return distances
 
-def show(history_records, prompt_pat, indices, last_n=6):
+def show(history_records, prompt_pat, exclude_pats, indices, last_n=6):
     if history_records is None and prompt_pat is not None:
         with open("manual-eval.log") as f:
             lines = f.readlines()
             lines = [line.strip() for line in lines if prompt_pat in line]
+            if len(exclude_pats) > 0:
+                lines = [line for line in lines if all([exclude_pat not in line for exclude_pat in exclude_pats])]
             history_records = lines
-
+    
     if len(history_records) == 0:
         print("No history records yet. Do a face verify first to pull some records.")
         return
@@ -386,25 +388,34 @@ def console(image_root="~/test", last_n=10, model_name="VGG-Face",
                 # Show relevant images as a grid.
                 if user_input.startswith('show '):
                     args = user_input[5:].split()       
+                    exclude_pats = []
+                    while args[-1].startswith('~'):
+                        exclude_pats.append(args.pop(-1)[1:])
+
                     if len(args) == 2:
                         subj_prompt, indices = args
-                        show(None, subj_prompt, indices, last_n=6)
+                        show(None, subj_prompt, exclude_pats, indices, last_n=20)
                     elif len(args) == 1:
                         if re.match(r'^[a-z0-9-]+$', args[0]):
                             subj_prompt = args[0]
                             indices = ':'
-                            show(None, subj_prompt, indices, last_n=6)
+                            show(None, subj_prompt, exclude_pats, indices, last_n=20)
                         else:
                             indices = args[0]
-                            show(history_records, None, indices, last_n=6)
+                            show(history_records, None, exclude_pats, indices, last_n=20)
                     else:
                         print("Invalid input. Format: <subj-prompt_signature> <index1,index2,...>")
                     continue
 
                 # Do face validation.
-                try:
-                    ckpt_iter, subject, prompt_sig  = user_input.split()
-                except:
+                args = user_input.split()
+                exclude_pats = []
+                while args[-1].startswith('~'):
+                    exclude_pats.append(args.pop(-1)[1:])
+
+                if len(args) == 3:
+                    ckpt_iter, subject, prompt_sig = args
+                else:
                     print("Invalid input. Please provide 3 arguments.")
                     continue
 
@@ -428,6 +439,8 @@ def console(image_root="~/test", last_n=10, model_name="VGG-Face",
                     with open("manual-eval.log") as f:
                         lines = f.readlines()
                         lines = [line.strip() for line in lines if line.startswith(f"{subject}-{prompt_sig}")]
+                        if len(exclude_pats) > 0:
+                            lines = [line for line in lines if all([exclude_pat not in line for exclude_pat in exclude_pats])]
                         # Deduplicate lines
                         lines = list(dict.fromkeys(lines))                        
                         lines = lines[-last_n:]
