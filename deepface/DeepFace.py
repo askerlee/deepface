@@ -415,21 +415,25 @@ def console(image_root="~/test", last_n=10, model_name="VGG-Face",
 
                 if len(args) == 3:
                     ckpt_iter, subject, prompt_sig = args
+                    # Paths are hard-coded for now
+                    img1_path = os.path.expanduser(f"{image_root}/{subject}-1.jpg")
+                    img2_paths = [ os.path.expanduser(f"{image_root}/{subject}-adaface{ckpt_iter}-{prompt_sig}-{i}.png") for i in range(1, 5) ]
+                    img2_path = ",".join(img2_paths)
+                    do_adaface_eval = True
+                elif len(args) == 2:
+                    img1_path, img2_path = args
+                    do_adaface_eval = False
                 else:
                     print("Invalid input. Please provide 3 arguments.")
                     continue
 
-                # Paths are hard-coded for now
-                img1_path = os.path.expanduser(f"{image_root}/{subject}-1.jpg")
-                img2_paths = [ os.path.expanduser(f"{image_root}/{subject}-adaface{ckpt_iter}-{prompt_sig}-{i}.png") for i in range(1, 5) ]
-                img2_path = ",".join(img2_paths)
                 print(f"verify2: {img1_path} {img2_path}")
                 distances = None
                 try:
                     distances = verify2(img1_path, img2_path, model_name=model_name, detector_backend=detector_backend)
                 except Exception as e:
                     print(f"Error: {e}")
-                if distances is not None:
+                if distances is not None and do_adaface_eval:
                     with open("manual-eval.log", "a") as f:
                         f.write(f"{subject}-{prompt_sig} {ckpt_iter} ")
                         f.write(" ".join([f"{distance:.3f}" for distance in distances]))
