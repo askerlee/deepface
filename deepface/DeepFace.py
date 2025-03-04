@@ -376,7 +376,7 @@ def console(image_root="~/test", last_n=10, model_name="VGG-Face",
         try:
             # Prompt for input
             user_input = input(">> ")
-            user_input = user_input.lower().strip()
+            user_input = user_input.strip()
 
             # Exit condition
             if user_input == "q":
