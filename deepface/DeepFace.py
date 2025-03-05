@@ -248,7 +248,7 @@ def verify2(
         - 'time' (float): Time taken for the verification process in seconds.
     """
 
-    img2_paths = img2_path.split(", ")
+    img2_paths = img2_path.split("|")
     distances = []
     for i in range(len(img2_paths)):
         img2_path = img2_paths[i].strip()
@@ -418,7 +418,7 @@ def console(image_root="~/test", last_n=10, model_name="VGG-Face",
                     # Paths are hard-coded for now
                     img1_path = os.path.expanduser(f"{image_root}/{subject}-1.jpg")
                     img2_paths = [ os.path.expanduser(f"{image_root}/{subject}-adaface{ckpt_iter}-{prompt_sig}-{i}.png") for i in range(1, 5) ]
-                    img2_path = ",".join(img2_paths)
+                    img2_path = "|".join(img2_paths)
                     do_adaface_eval = True
                 elif len(args) == 2:
                     img1_path, img2_path = args
