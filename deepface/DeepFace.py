@@ -248,7 +248,7 @@ def verify2(
         - 'time' (float): Time taken for the verification process in seconds.
     """
 
-    img2_paths = img2_path.split(",")
+    img2_paths = img2_path.split(", ")
     distances = []
     for i in range(len(img2_paths)):
         img2_path = img2_paths[i].strip()
