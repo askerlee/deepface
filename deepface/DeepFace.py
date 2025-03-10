@@ -270,8 +270,10 @@ def verify2(
                     threshold=threshold,
                     anti_spoofing=anti_spoofing,
                 )
-            print(f"{img2_path}: {result['distance']:.3f}")
-            distances.append(result['distance'])
+            distance = result['distance']
+            simi = 1 - distance
+            print(f"{img2_path}: {simi:.3f}  {distance:.3f}")
+            distances.append(distance)
         except Exception as e:
             print(f"Error: {e}")
             continue
