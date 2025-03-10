@@ -279,7 +279,10 @@ def verify2(
             print(f"{img2_path}: {simi:.3f}  {distance:.3f}")
             distances.append(distance)
         except Exception as e:
-            print(f"Error: {e}")
+            errmsg = str(e)
+            errmsg = errmsg.replace("img1_path", img1_path)
+            errmsg = errmsg.replace("img2_path", img2_path)
+            print(errmsg)
             continue
     
     if len(distances) == 0:
