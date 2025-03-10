@@ -280,8 +280,9 @@ def verify2(
         return None
     
     avg_distance = sum(distances) / len(distances)
+    avg_simi     = 1 - avg_distance
     distances.append(avg_distance)
-    print(f"Average distance: {avg_distance:.3f}")
+    print(f"Average similarity: {avg_simi:.3f}. Average distance: {avg_distance:.3f}")
     return distances
 
 def show(history_records, prompt_pat, exclude_pats, indices, last_n=6):
@@ -410,7 +411,7 @@ def console(image_root="~/test", last_n=10, model_name="VGG-Face",
                 # Do face validation.
                 args = user_input.split()
                 exclude_pats = []
-                while args[-1].startswith('~'):
+                while args[-1].startswith('-'):
                     exclude_pats.append(args.pop(-1)[1:])
 
                 if len(args) == 3:
@@ -422,11 +423,14 @@ def console(image_root="~/test", last_n=10, model_name="VGG-Face",
                     do_adaface_eval = True
                 elif len(args) == 2:
                     img1_path, img2_path = args
+                    img1_path = os.path.expanduser(img1_path)
+                    img2_path = os.path.expanduser(img2_path)
                     do_adaface_eval = False
                 else:
                     print("Invalid input. Please provide 3 arguments.")
                     continue
 
+                # Ad-hoc evaluation of two images
                 print(f"verify2: {img1_path} {img2_path}")
                 distances = None
                 try:
