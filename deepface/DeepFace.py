@@ -254,6 +254,10 @@ def verify2(
         img2_path = img2_paths[i].strip()
         # Extend "~" symbol to the home directory in the path
         img2_path = os.path.expanduser(img2_path)
+        # If the image path is relative, prepend the folder path of the first image
+        if i > 0 and not os.path.exists(img2_path):
+            folder_path = os.path.dirname(img2_paths[0])
+            img2_path = os.path.join(folder_path, img2_path)
 
         try:
             result = verification.verify(
