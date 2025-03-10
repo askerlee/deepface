@@ -282,7 +282,7 @@ def verify2(
     avg_distance = sum(distances) / len(distances)
     avg_simi     = 1 - avg_distance
     distances.append(avg_distance)
-    print(f"Average similarity: {avg_simi:.3f}. Average distance: {avg_distance:.3f}")
+    print(f"Average similarity: {avg_simi:.3f}  Average distance: {avg_distance:.3f}")
     return distances
 
 def show(history_records, prompt_pat, exclude_pats, indices, last_n=6):
